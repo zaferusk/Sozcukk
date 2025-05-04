@@ -20,10 +20,11 @@
 
     input {
       padding: 10px;
-      width: 200px;
+      width: 220px;
       margin: 10px;
       border: 2px solid #b71c1c;
       border-radius: 10px;
+      font-size: 16px;
     }
 
     button {
@@ -33,6 +34,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      font-size: 16px;
     }
 
     ul {
@@ -48,15 +50,23 @@
       padding: 10px;
       border-radius: 8px;
       max-width: 300px;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
   <h1>Sözcük Avı</h1>
 
+  <!-- Harf arama -->
+  <input type="text" id="harfInput" placeholder="Harf(ler) girin (örnek: t l)">
+  <button onclick="kelimeAra()">Ara</button>
+
+  <!-- Kelime ekleme -->
+  <h3>Yeni Kelime Ekle</h3>
   <input type="text" id="yeniKelimeInput" placeholder="Yeni kelime yaz">
   <button onclick="kelimeEkle()">Ekle</button>
 
+  <!-- Sonuç listesi -->
   <ul id="sonuclar"></ul>
 
   <!-- Firebase SDK -->
@@ -64,7 +74,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase yapılandırman
+    // Firebase yapılandırma
     const firebaseConfig = {
       apiKey: "AIzaSyCz9FOs-rnih7ZLZPva0xpKldmbaKpwrQA",
       authDomain: "sozcuk-38616.firebaseapp.com",
@@ -78,9 +88,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Kelimeleri getir
+    // Kelime listele
     window.onload = function () {
+      tumKelimeleriGoster();
+    };
+
+    function tumKelimeleriGoster() {
       const sonucListesi = document.getElementById("sonuclar");
+      sonucListesi.innerHTML = "";
       db.collection("kelimeler").get().then(snapshot => {
         snapshot.forEach(doc => {
           const li = document.createElement("li");
@@ -88,7 +103,7 @@
           sonucListesi.appendChild(li);
         });
       });
-    };
+    }
 
     // Kelime ekle
     function kelimeEkle() {
@@ -96,9 +111,36 @@
       if (yeniKelime) {
         db.collection("kelimeler").add({ metin: yeniKelime }).then(() => {
           alert(`"${yeniKelime}" eklendi!`);
-          location.reload();
+          document.getElementById("yeniKelimeInput").value = '';
+          tumKelimeleriGoster();
         });
       }
+    }
+
+    // Harf arama
+    function kelimeAra() {
+      const input = document.getElementById("harfInput").value.toLowerCase().replace(/\s+/g, '');
+      const harfler = input.split('');
+      const sonucListesi = document.getElementById("sonuclar");
+      sonucListesi.innerHTML = '';
+
+      db.collection("kelimeler").get().then(snapshot => {
+        let bulundu = false;
+        snapshot.forEach(doc => {
+          const kelime = doc.data().metin.toLowerCase();
+          const hepsiVar = harfler.every(harf => kelime.includes(harf));
+          if (hepsiVar) {
+            const li = document.createElement("li");
+            li.textContent = kelime;
+            sonucListesi.appendChild(li);
+            bulundu = true;
+          }
+        });
+
+        if (!bulundu) {
+          sonucListesi.innerHTML = '<li>Uygun kelime bulunamadı.</li>';
+        }
+      });
     }
   </script>
 </body>
