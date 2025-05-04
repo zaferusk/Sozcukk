@@ -58,7 +58,7 @@
   <h1>Sözcük Avı</h1>
 
   <!-- Harf arama -->
-  <input type="text" id="harfInput" placeholder="Harf(ler) girin (örnek: t l)">
+  <input type="text" id="harfInput" placeholder="Harf(ler) girin (örnek: b, t)">
   <button onclick="kelimeAra()">Ara</button>
 
   <!-- Kelime ekleme -->
@@ -74,7 +74,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase yapılandırma
     const firebaseConfig = {
       apiKey: "AIzaSyCz9FOs-rnih7ZLZPva0xpKldmbaKpwrQA",
       authDomain: "sozcuk-38616.firebaseapp.com",
@@ -88,14 +87,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Kelime listele
-    window.onload = function () {
-      tumKelimeleriGoster();
-    };
-
+    // Tüm kelimeleri listele
     function tumKelimeleriGoster() {
       const sonucListesi = document.getElementById("sonuclar");
-      sonucListesi.innerHTML = "";
+      sonucListesi.innerHTML = '';
       db.collection("kelimeler").get().then(snapshot => {
         snapshot.forEach(doc => {
           const li = document.createElement("li");
@@ -105,7 +100,10 @@
       });
     }
 
-    // Kelime ekle
+    // Sayfa açıldığında tüm kelimeleri göster
+    window.onload = tumKelimeleriGoster;
+
+    // Yeni kelime ekle
     function kelimeEkle() {
       const yeniKelime = document.getElementById("yeniKelimeInput").value.toLowerCase().trim();
       if (yeniKelime) {
@@ -117,7 +115,7 @@
       }
     }
 
-    // Harf arama
+    // Harf filtreleme
     function kelimeAra() {
       const input = document.getElementById("harfInput").value.toLowerCase().replace(/\s+/g, '');
       const harfler = input.split('');
